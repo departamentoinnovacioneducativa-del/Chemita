@@ -1,2 +1,2 @@
-# Chemita
-IA de apoyo primaria 
+# Juventus
+IA personal del instituto juventud
