@@ -43,19 +43,17 @@ css_chemita = """
     }
 
     /* --- ESTILO DEL BANNER DE IMAGEN --- */
-    /* Elimina el espacio en blanco alrededor de la imagen */
     div[data-testid="stImageContainer"] {
         margin: 0 0 15px 0 !important;
         padding: 0 !important;
     }
-    /* Hace que la imagen sea un banner responsivo (rectangular) */
     div[data-testid="stImageContainer"] img {
-        width: 100% !important; /* Ocupa todo el ancho */
-        height: auto !important; /* Mantiene la proporción */
-        max-height: 250px; /* Altura máxima para que no sea gigante en PC */
-        object-fit: cover !important; /* Evita que se deforme */
-        border-radius: 10px; /* Bordes redondeados */
-        border: 3px solid #2ECC71; /* Marco verde de la imagen */
+        width: 100% !important; 
+        height: auto !important; 
+        max-height: 250px; 
+        object-fit: cover !important; 
+        border-radius: 10px; 
+        border: 3px solid #2ECC71; 
         box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
 
@@ -91,7 +89,7 @@ css_chemita = """
     .custom-title-chemita {
         text-align: center;
         color: #FFE484; 
-        font-size: clamp(2em, 6vw, 3.5em); /* Tamaño responsivo */
+        font-size: clamp(2em, 6vw, 3.5em); 
         font-weight: bold;
         margin-bottom: 0;
         line-height: 1.2;
@@ -99,7 +97,7 @@ css_chemita = """
     .custom-subtitle-chemita {
         text-align: center;
         color: #FFE484;
-        font-size: clamp(0.9em, 3vw, 1.2em); /* Tamaño responsivo */
+        font-size: clamp(0.9em, 3vw, 1.2em); 
         margin-top: 5px;
         margin-bottom: 20px;
     }
@@ -124,7 +122,6 @@ st.markdown(css_chemita, unsafe_allow_html=True)
 
 # FUNCIÓN PARA MOSTRAR BANNER Y TÍTULO
 def mostrar_titulo_chemita():
-    # Usamos st.image nativo de Streamlit para que funcione en la nube
     if os.path.exists("chemita.png"):
         st.image("chemita.png", use_container_width=True)
     else:
@@ -133,7 +130,7 @@ def mostrar_titulo_chemita():
     st.markdown('<h1 class="custom-title-chemita">Chemita</h1>', unsafe_allow_html=True)
     st.markdown('<p class="custom-subtitle-chemita">✨ Tu amigo siempre útil y empático ✨</p>', unsafe_allow_html=True)
 
-# PERSONALIDAD DE CHEMITA
+# PERSONALIDAD DE CHEMITA (ACTUALIZADA CON REGLA DE LONGITUD)
 SYSTEM_PROMPT = """Eres CHEMITA, un amigo virtual empático, saludable y lleno de energía creado especialmente para niños.
 
 **TU PERSONALIDAD Y VALORES (JOSEFINOS):**
@@ -159,6 +156,7 @@ SYSTEM_PROMPT = """Eres CHEMITA, un amigo virtual empático, saludable y lleno d
 - Mantienes un tono positivo y constructivo.
 - Promueves el trabajo duro y la perseverancia (hacer lo mejor).
 - Conviertes los "errores" en oportunidades de aprendizaje para "adelante siempre adelante".
+- **REGLA DE LONGITUD ESTRICTA:** Tus respuestas deben ser muy cortas y fáciles de leer para un niño. NUNCA escribas más de dos párrafos. Ve directo al punto con cariño.
 """
 
 mostrar_titulo_chemita()
@@ -181,78 +179,4 @@ def speak_js(text):
     """Inyecta JavaScript para hablar."""
     clean_text = text.replace("'", "\\'").replace('"', '\\"').replace("\n", " ")
     js_code = f"""
-    <div id="audio-trigger" style="height:0; overflow:hidden;"></div>
-    <script>
-        var text = "{clean_text}";
-        function hablar() {{
-            if ('speechSynthesis' in window) {{
-                var utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'es-MX';
-                utterance.rate = 0.9;
-                utterance.pitch = 1.1;
-                window.speechSynthesis.cancel();
-                window.speechSynthesis.speak(utterance);
-            }}
-        }}
-        hablar();
-    </script>
-    """
-    components.html(js_code, height=0)
-
-# HISTORIAL DE CHAT
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-if "last_response" not in st.session_state:
-    st.session_state.last_response = ""
-
-if not st.session_state.messages:
-    bienvenida = "✨ ¡Hola! ¡Soy Chemita! Tu amigo siempre útil, empático y saludable. ¡Adelante siempre adelante! ¿Qué quieres preguntar hoy? 😊⚽🎨"
-    st.session_state.messages.append({"role": "assistant", "content": bienvenida})
-    st.session_state.last_response = bienvenida
-
-for message in st.session_state.messages:
-    if message["role"] != "system":
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
-
-def procesar_respuesta(user_input):
-    with st.chat_message("user"):
-        st.markdown(user_input)
-    st.session_state.messages.append({"role": "user", "content": user_input})
-
-    with st.chat_message("assistant"):
-        with st.spinner("✨ Chemita está pensando en lo mejor..."):
-            try:
-                mensajes_api = [{"role": "system", "content": SYSTEM_PROMPT}] + st.session_state.messages
-                stream = client.chat.completions.create(
-                    model="llama-3.1-8b-instant",
-                    messages=mensajes_api,
-                    stream=True,
-                    temperature=0.7,
-                )
-                response = st.write_stream(stream)
-                st.session_state.messages.append({"role": "assistant", "content": response})
-                st.session_state.last_response = response
-            except Exception as e:
-                st.error(f"✨ Ups... Chemita tuvo un problema: {str(e)}")
-
-# --- INTERFAZ DE USUARIO ---
-placeholder_text = "✏️ Escribe tu pregunta... ¡Adelante, Chemita te ayuda! 😊🏃‍♂️"
-if prompt := st.chat_input(placeholder_text):
-    procesar_respuesta(prompt)
-
-# Botones de acción
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    b_col1, b_col2 = st.columns(2)
-    with b_col1:
-        if st.button("🔊 Escuchar", use_container_width=True):
-            if st.session_state.last_response:
-                speak_js(st.session_state.last_response)
-            else:
-                speak_js("✨ ¡Hola! Pregúntame algo y te ayudaré")
-    with b_col2:
-        if st.button("🔄 Reiniciar", use_container_width=True):
-            st.session_state.messages = []
-            st.session_state.last_response = ""
-            st.rerun()
+    <div id="audio-trigger" style="height:0
