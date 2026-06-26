@@ -179,4 +179,78 @@ def speak_js(text):
     """Inyecta JavaScript para hablar."""
     clean_text = text.replace("'", "\\'").replace('"', '\\"').replace("\n", " ")
     js_code = f"""
-    <div id="audio-trigger" style="height:0
+    <div id="audio-trigger" style="height:0; overflow:hidden;"></div>
+    <script>
+        var text = "{clean_text}";
+        function hablar() {{
+            if ('speechSynthesis' in window) {{
+                var utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'es-MX';
+                utterance.rate = 0.9;
+                utterance.pitch = 1.1;
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(utterance);
+            }}
+        }}
+        hablar();
+    </script>
+    """
+    components.html(js_code, height=0)
+
+# HISTORIAL DE CHAT
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "last_response" not in st.session_state:
+    st.session_state.last_response = ""
+
+if not st.session_state.messages:
+    bienvenida = "✨ ¡Hola! ¡Soy Chemita! Tu amigo siempre útil, empático y saludable. ¡Adelante siempre adelante! ¿Qué quieres preguntar hoy? 😊⚽🎨"
+    st.session_state.messages.append({"role": "assistant", "content": bienvenida})
+    st.session_state.last_response = bienvenida
+
+for message in st.session_state.messages:
+    if message["role"] != "system":
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+def procesar_respuesta(user_input):
+    with st.chat_message("user"):
+        st.markdown(user_input)
+    st.session_state.messages.append({"role": "user", "content": user_input})
+
+    with st.chat_message("assistant"):
+        with st.spinner("✨ Chemita está pensando en lo mejor..."):
+            try:
+                mensajes_api = [{"role": "system", "content": SYSTEM_PROMPT}] + st.session_state.messages
+                stream = client.chat.completions.create(
+                    model="llama-3.1-8b-instant",
+                    messages=mensajes_api,
+                    stream=True,
+                    temperature=0.7,
+                )
+                response = st.write_stream(stream)
+                st.session_state.messages.append({"role": "assistant", "content": response})
+                st.session_state.last_response = response
+            except Exception as e:
+                st.error(f"✨ Ups... Chemita tuvo un problema: {str(e)}")
+
+# --- INTERFAZ DE USUARIO ---
+placeholder_text = "✏️ Escribe tu pregunta... ¡Adelante, Chemita te ayuda! 😊🏃‍♂️"
+if prompt := st.chat_input(placeholder_text):
+    procesar_respuesta(prompt)
+
+# Botones de acción
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    b_col1, b_col2 = st.columns(2)
+    with b_col1:
+        if st.button("🔊 Escuchar", use_container_width=True):
+            if st.session_state.last_response:
+                speak_js(st.session_state.last_response)
+            else:
+                speak_js("✨ ¡Hola! Pregúntame algo y te ayudaré")
+    with b_col2:
+        if st.button("🔄 Reiniciar", use_container_width=True):
+            st.session_state.messages = []
+            st.session_state.last_response = ""
+            st.rerun()
