@@ -12,51 +12,56 @@ st.set_page_config(
     menu_items={'Get Help': None, 'Report a bug': None, 'About': None}
 )
 
-# CSS CON FONDO AZUL MARINO Y MARCO VERDE
+# CSS MEJORADO: Fondo Azul Marino, Marco Verde y Diseño Responsivo
 css_chemita = """
 <style>
-    /* Ocultar elementos de Streamlit y configurar layout */
+    /* Ocultar elementos de Streamlit */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     [data-testid="stDecoration"] {display: none;}
-    .stApp {max-width: 100%; padding: 0; background-color: #001F3F !important;} /* Azul Marino */
-    .stDeployButton {display: none;}
     [data-testid="stToolbar"] {display: none;}
     [data-testid="stStatusWidget"] {display: none;}
+    .stDeployButton {display: none;}
 
-    /* Green Frame around the main content container and everything inside */
+    /* Fondo y Marco General */
+    .stApp {
+        max-width: 100%; 
+        padding: 0; 
+        background-color: #001F3F !important; /* Azul Marino */
+    }
     .stApp > div {
-        border: 10px solid #2ECC71 !important; /* Green Frame */
+        border: 8px solid #2ECC71 !important; /* Marco Verde */
         border-radius: 15px;
-        overflow: hidden; /* Prevent content bleeding */
-        box-sizing: border-box; /* Include border in width */
+        overflow: hidden; 
+        box-sizing: border-box; 
     }
 
-    /* Main container padding inside the frame */
+    /* Contenedor principal */
     [data-testid="stBlock"] {
-        padding: 20px;
+        padding: 15px;
     }
 
     /* Estilo de los mensajes - Fondo amarillo tenue */
     [data-testid="stChatMessage"] {
-        background-color: #FFFDE0 !important; /* Pale Yellow / Amarillo Tenue */
-        border-radius: 20px;
+        background-color: #FFFDE0 !important; 
+        border-radius: 15px;
         padding: 15px;
         margin: 10px 0;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        color: #333 !important; /* Text color for contrast */
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        color: #333 !important; 
     }
 
-    /* Re-style chat input for navy theme */
+    /* Entrada de Chat */
     [data-testid="stChatInput"] {
         background-color: transparent !important;
+        padding-bottom: 10px;
     }
     [data-testid="stChatInput"] > div {
-        border-radius: 30px;
-        border: 2px solid #2ECC71 !important; /* Green border for input */
+        border-radius: 25px;
+        border: 2px solid #2ECC71 !important; 
         background-color: white !important;
-        padding-right: 15px !important;
+        padding: 5px 15px !important;
     }
     [data-testid="stChatInput"] input {
         color: #333 !important;
@@ -68,59 +73,69 @@ css_chemita = """
     /* Título personalizado */
     .custom-title-chemita {
         text-align: center;
-        color: #FFE484; /* Yellow title text */
-        font-size: 3em;
+        color: #FFE484; 
+        font-size: clamp(2em, 6vw, 3.5em); /* Tamaño responsivo */
         font-weight: bold;
         margin-bottom: 0;
+        line-height: 1.2;
     }
     .custom-subtitle-chemita {
         text-align: center;
         color: #FFE484;
-        font-size: 1.2em;
-        margin-top: -10px;
+        font-size: clamp(0.9em, 3vw, 1.2em); /* Tamaño responsivo */
+        margin-top: 5px;
         margin-bottom: 20px;
     }
 
-    /* Botones estilo Josefin */
-    .stButton button {
-        background-color: #2ECC71 !important; /* Green button */
-        color: white !important;
-        font-weight: bold;
-        border-radius: 30px;
-        border: none;
-        transition: transform 0.2s;
+    /* Imagen Responsiva */
+    .chemita-img-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 10px;
     }
-    .stButton button:hover {
-        transform: scale(1.05);
-        background-color: #27AE60 !important; /* Slightly darker green */
+    .chemita-img {
+        width: clamp(100px, 30vw, 180px); /* Se adapta a la pantalla */
+        height: auto;
+        border-radius: 50%; /* Imagen circular */
+        border: 4px solid #2ECC71;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        object-fit: cover;
     }
 
-    /* Assistant vs. User Border styles, keeping asymmetry but using green/navy */
-    [data-testid="stChatMessage"][data-testid*="assistant"] {
-        border-left: 10px solid #2ECC71; /* Green border for Chemita */
+    /* Botones */
+    .stButton button {
+        background-color: #2ECC71 !important; 
+        color: white !important;
+        font-weight: bold;
+        border-radius: 20px;
+        border: none;
+        padding: 10px 15px;
+        transition: transform 0.2s, background-color 0.2s;
     }
-    [data-testid="stChatMessage"][data-testid*="user"] {
-        border-right: 10px solid #004080; /* Brighter navy border for user */
+    .stButton button:hover {
+        transform: scale(1.03);
+        background-color: #27AE60 !important; 
     }
 </style>
 """
 st.markdown(css_chemita, unsafe_allow_html=True)
 
-# FUNCIÓN PARA MOSTRAR IMAGEN Y TÍTULO DE CHEMITA
+# FUNCIÓN PARA MOSTRAR IMAGEN Y TÍTULO (RESPONSIVO)
 def mostrar_titulo_chemita():
-    # Centered layout using columns
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        if os.path.exists("chemita.png"):
-            st.image("chemita.png", width=200) # Muestra la imagen si existe y arregla el aviso de Streamlit
-        else:
-            st.warning("🖼️ Falta subir el archivo 'chemita.png' a GitHub")
+    # Usamos HTML directo para controlar el tamaño responsivo de la imagen
+    if os.path.exists("chemita.png"):
+        st.markdown("""
+        <div class="chemita-img-container">
+            <img src="chemita.png" class="chemita-img" alt="Chemita">
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.warning("🖼️ Falta subir el archivo 'chemita.png' a GitHub")
     
-    # Title and subtitle HTML
     st.markdown('<h1 class="custom-title-chemita">Chemita</h1>', unsafe_allow_html=True)
     st.markdown('<p class="custom-subtitle-chemita">✨ Tu amigo siempre útil y empático ✨</p>', unsafe_allow_html=True)
 
-# PERSONALIDAD DE CHEMITA - TUTOR INFANTIL JOSEFINO
+# PERSONALIDAD DE CHEMITA
 SYSTEM_PROMPT = """Eres CHEMITA, un amigo virtual empático, saludable y lleno de energía creado especialmente para niños.
 
 **TU PERSONALIDAD Y VALORES (JOSEFINOS):**
@@ -148,17 +163,20 @@ SYSTEM_PROMPT = """Eres CHEMITA, un amigo virtual empático, saludable y lleno d
 - Conviertes los "errores" en oportunidades de aprendizaje para "adelante siempre adelante".
 """
 
-# Mostrar título en la parte superior
 mostrar_titulo_chemita()
 
-# CONEXIÓN CON GROQ USANDO SECRETS
+# CONEXIÓN CON GROQ USANDO SECRETS (Manejo de errores mejorado)
 try:
+    # Asegúrate de que la estructura en secrets.toml sea [groq] \n api_key = "..."
     client = OpenAI(
         base_url="https://api.groq.com/openai/v1",
         api_key=st.secrets["groq"]["api_key"]
     )
+except KeyError:
+    st.error("🚨 Error de configuración: No se encontró la API Key. Revisa tus Secrets en Streamlit Cloud.")
+    st.stop()
 except Exception as e:
-    st.error("✨ ¡Oh no! Chemita necesita su 'llave' de conexión. Por favor configura la API key en los Secrets de Streamlit.")
+    st.error(f"✨ ¡Oh no! Ocurrió un error de conexión: {e}")
     st.stop()
 
 # --- FUNCIÓN DE VOZ (TEXT-TO-SPEECH) ---
@@ -166,7 +184,7 @@ def speak_js(text):
     """Inyecta JavaScript para hablar."""
     clean_text = text.replace("'", "\\'").replace('"', '\\"').replace("\n", " ")
     js_code = f"""
-    <div id="audio-trigger"></div>
+    <div id="audio-trigger" style="height:0; overflow:hidden;"></div>
     <script>
         var text = "{clean_text}";
         function hablar() {{
@@ -190,26 +208,21 @@ if "messages" not in st.session_state:
 if "last_response" not in st.session_state:
     st.session_state.last_response = ""
 
-# Mostrar mensaje de bienvenida si no hay historial
 if not st.session_state.messages:
     bienvenida = "✨ ¡Hola! ¡Soy Chemita! Tu amigo siempre útil, empático y saludable. ¡Adelante siempre adelante! ¿Qué quieres preguntar hoy? 😊⚽🎨"
     st.session_state.messages.append({"role": "assistant", "content": bienvenida})
     st.session_state.last_response = bienvenida
 
-# Mostrar historial
 for message in st.session_state.messages:
     if message["role"] != "system":
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-# FUNCIÓN PARA PROCESAR RESPUESTA
 def procesar_respuesta(user_input):
-    # Muestra mensaje del usuario
     with st.chat_message("user"):
         st.markdown(user_input)
     st.session_state.messages.append({"role": "user", "content": user_input})
 
-    # Genera respuesta
     with st.chat_message("assistant"):
         with st.spinner("✨ Chemita está pensando en lo mejor..."):
             try:
@@ -218,7 +231,7 @@ def procesar_respuesta(user_input):
                     model="llama-3.1-8b-instant",
                     messages=mensajes_api,
                     stream=True,
-                    temperature=0.7, # Adjusted slightly lower for a healthy, empathetic tone
+                    temperature=0.7,
                 )
                 response = st.write_stream(stream)
                 st.session_state.messages.append({"role": "assistant", "content": response})
@@ -227,22 +240,23 @@ def procesar_respuesta(user_input):
                 st.error(f"✨ Ups... Chemita tuvo un problema: {str(e)}")
 
 # --- INTERFAZ DE USUARIO ---
-
-# 1. Entrada de Texto
 placeholder_text = "✏️ Escribe tu pregunta... ¡Adelante, Chemita te ayuda! 😊🏃‍♂️"
 if prompt := st.chat_input(placeholder_text):
     procesar_respuesta(prompt)
 
-# 2. Botones de acción
-col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
+# Botones de acción (Ajustados para mejor vista en móvil)
+col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
-    if st.button("🔊 Escuchar a Chemita", use_container_width=True):
-        if st.session_state.last_response:
-            speak_js(st.session_state.last_response)
-        else:
-            speak_js("✨ ¡Hola! Pregúntame algo y te ayudaré")
-with col3:
-    if st.button("🔄 Empezar de nuevo", use_container_width=True):
-        st.session_state.messages = []
-        st.session_state.last_response = ""
-        st.rerun()
+    # Usamos columnas anidadas para que los botones se pongan uno al lado del otro en PC y se ajusten en móvil
+    b_col1, b_col2 = st.columns(2)
+    with b_col1:
+        if st.button("🔊 Escuchar", use_container_width=True):
+            if st.session_state.last_response:
+                speak_js(st.session_state.last_response)
+            else:
+                speak_js("✨ ¡Hola! Pregúntame algo y te ayudaré")
+    with b_col2:
+        if st.button("🔄 Reiniciar", use_container_width=True):
+            st.session_state.messages = []
+            st.session_state.last_response = ""
+            st.rerun()
