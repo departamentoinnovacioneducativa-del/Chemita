@@ -242,5 +242,3 @@ with col3:
         st.session_state.messages = []
         st.session_state.last_response = ""
         st.rerun()
-
-```
