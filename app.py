@@ -42,6 +42,23 @@ css_chemita = """
         padding: 15px;
     }
 
+    /* --- ESTILO DEL BANNER DE IMAGEN --- */
+    /* Elimina el espacio en blanco alrededor de la imagen */
+    div[data-testid="stImageContainer"] {
+        margin: 0 0 15px 0 !important;
+        padding: 0 !important;
+    }
+    /* Hace que la imagen sea un banner responsivo (rectangular) */
+    div[data-testid="stImageContainer"] img {
+        width: 100% !important; /* Ocupa todo el ancho */
+        height: auto !important; /* Mantiene la proporción */
+        max-height: 250px; /* Altura máxima para que no sea gigante en PC */
+        object-fit: cover !important; /* Evita que se deforme */
+        border-radius: 10px; /* Bordes redondeados */
+        border: 3px solid #2ECC71; /* Marco verde de la imagen */
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
     /* Estilo de los mensajes - Fondo amarillo tenue */
     [data-testid="stChatMessage"] {
         background-color: #FFFDE0 !important; 
@@ -87,21 +104,6 @@ css_chemita = """
         margin-bottom: 20px;
     }
 
-    /* Imagen Responsiva */
-    .chemita-img-container {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 10px;
-    }
-    .chemita-img {
-        width: clamp(100px, 30vw, 180px); /* Se adapta a la pantalla */
-        height: auto;
-        border-radius: 50%; /* Imagen circular */
-        border: 4px solid #2ECC71;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        object-fit: cover;
-    }
-
     /* Botones */
     .stButton button {
         background-color: #2ECC71 !important; 
@@ -120,17 +122,13 @@ css_chemita = """
 """
 st.markdown(css_chemita, unsafe_allow_html=True)
 
-# FUNCIÓN PARA MOSTRAR IMAGEN Y TÍTULO (RESPONSIVO)
+# FUNCIÓN PARA MOSTRAR BANNER Y TÍTULO
 def mostrar_titulo_chemita():
-    # Usamos HTML directo para controlar el tamaño responsivo de la imagen
+    # Usamos st.image nativo de Streamlit para que funcione en la nube
     if os.path.exists("chemita.png"):
-        st.markdown("""
-        <div class="chemita-img-container">
-            <img src="chemita.png" class="chemita-img" alt="Chemita">
-        </div>
-        """, unsafe_allow_html=True)
+        st.image("chemita.png", use_container_width=True)
     else:
-        st.warning("🖼️ Falta subir el archivo 'chemita.png' a GitHub")
+        st.warning("🖼️ Falta subir el archivo 'chemita.png' a GitHub en la misma carpeta que app.py")
     
     st.markdown('<h1 class="custom-title-chemita">Chemita</h1>', unsafe_allow_html=True)
     st.markdown('<p class="custom-subtitle-chemita">✨ Tu amigo siempre útil y empático ✨</p>', unsafe_allow_html=True)
@@ -165,9 +163,8 @@ SYSTEM_PROMPT = """Eres CHEMITA, un amigo virtual empático, saludable y lleno d
 
 mostrar_titulo_chemita()
 
-# CONEXIÓN CON GROQ USANDO SECRETS (Manejo de errores mejorado)
+# CONEXIÓN CON GROQ USANDO SECRETS
 try:
-    # Asegúrate de que la estructura en secrets.toml sea [groq] \n api_key = "..."
     client = OpenAI(
         base_url="https://api.groq.com/openai/v1",
         api_key=st.secrets["groq"]["api_key"]
@@ -244,10 +241,9 @@ placeholder_text = "✏️ Escribe tu pregunta... ¡Adelante, Chemita te ayuda! 
 if prompt := st.chat_input(placeholder_text):
     procesar_respuesta(prompt)
 
-# Botones de acción (Ajustados para mejor vista en móvil)
+# Botones de acción
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
-    # Usamos columnas anidadas para que los botones se pongan uno al lado del otro en PC y se ajusten en móvil
     b_col1, b_col2 = st.columns(2)
     with b_col1:
         if st.button("🔊 Escuchar", use_container_width=True):
