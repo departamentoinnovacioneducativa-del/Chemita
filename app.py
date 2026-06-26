@@ -1,11 +1,12 @@
 import streamlit as st
 from openai import OpenAI
 import streamlit.components.v1 as components
+import os
 
 # CONFIGURACIÓN DE PÁGINA
 st.set_page_config(
     page_title="Chemita | Amigo Joséfino",
-    page_icon="chemita.png", # Changed icon to the new image file name
+    page_icon="chemita.png",
     layout="centered",
     initial_sidebar_state="collapsed",
     menu_items={'Get Help': None, 'Report a bug': None, 'About': None}
@@ -110,7 +111,10 @@ def mostrar_titulo_chemita():
     # Centered layout using columns
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.image("chemita.png", width=200, use_container_width=True) # Display the uploaded image
+        if os.path.exists("chemita.png"):
+            st.image("chemita.png", width=200) # Muestra la imagen si existe y arregla el aviso de Streamlit
+        else:
+            st.warning("🖼️ Falta subir el archivo 'chemita.png' a GitHub")
     
     # Title and subtitle HTML
     st.markdown('<h1 class="custom-title-chemita">Chemita</h1>', unsafe_allow_html=True)
